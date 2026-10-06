@@ -1,0 +1,338 @@
+import coliseo.*
+import gladiadores.*
+import armasYArmaduras.*
+
+describe "Gladiadores" {
+
+    const espada = new Filo(
+        filo = 0.8,
+        longitud = 100
+    )
+
+    const daga = new Filo(
+        filo = 0.5,
+        longitud = 40
+    )
+
+    const maza = new Contundente(
+        peso = 30
+    )
+
+    const martillo = new Contundente(
+        peso = 50
+    )
+
+    const casco = new Casco()
+
+    const escudo = new Escudo()
+
+
+    test "Todos los gladiadores comienzan con 100 de vida" {
+        const mirmillon = new Mirmillon(
+            nombre = "Mirmillon",
+            fuerza = 20,
+            arma = espada,
+            armadura = casco
+        )
+
+        const dimachaerus = new Dimachaerus(
+            nombre = "Dima",
+            destreza = 20
+        )
+
+        assert.equals(100, mirmillon.vidaActual())
+        assert.equals(100, dimachaerus.vidaActual())
+    }
+
+
+    test "El poder de un arma de filo es filo por longitud" {
+  
+        assert.equals(80, espada.valorAtaque())
+
+        assert.equals(20, daga.valorAtaque())
+    }
+
+
+    test "El poder de un arma contundente es su peso" {
+        assert.equals(30, maza.valorAtaque())
+        assert.equals(50, martillo.valorAtaque())
+    }
+
+
+    test "La defensa de un mirmillon con casco es armadura más destreza" {
+        const mirmillon = new Mirmillon(
+            nombre = "Mirmillon",
+            fuerza = 20,
+            arma = espada,
+            armadura = casco
+        )
+
+        assert.equals(25, mirmillon.defensa())
+    }
+
+
+    test "La defensa de un mirmillon con escudo suma 5 más el 10 por ciento de su destreza" {
+        const mirmillon = new Mirmillon(
+            nombre = "Mirmillon",
+            fuerza = 20,
+            arma = espada,
+            armadura = escudo
+        )
+
+        assert.equals(21.5, mirmillon.defensa())
+    }
+
+
+    test "La defensa de un dimachaerus es la mitad de su destreza" {
+        const dimachaerus = new Dimachaerus(
+            nombre = "Dima",
+            destreza = 20
+        )
+
+        assert.equals(10, dimachaerus.defensa())
+    }
+
+
+    test "El poder de ataque de un mirmillon es su fuerza más el poder de su arma" {
+        const mirmillon = new Mirmillon(
+            nombre = "Mirmillon",
+            fuerza = 20,
+            arma = espada,
+            armadura = casco
+        )
+
+        assert.equals(100, mirmillon.poderAtaque())
+    }
+
+
+    test "El poder de ataque de un dimachaerus suma todas sus armas a su fuerza" {
+        const dimachaerus = new Dimachaerus(
+            nombre = "Dima",
+            destreza = 20
+        )
+
+        dimachaerus.añadirArma(maza)
+        dimachaerus.añadirArma(martillo)
+
+        assert.equals(90, dimachaerus.poderAtaque())
+    }
+
+
+    test "Un mirmillon puede cambiar su arma" {
+        const mirmillon = new Mirmillon(
+            nombre = "Mirmillon",
+            fuerza = 20,
+            arma = espada,
+            armadura = casco
+        )
+
+        mirmillon.cambiarArma(daga)
+
+        assert.equals(40, mirmillon.poderAtaque())
+    }
+
+
+    test "Un mirmillon puede cambiar su armadura" {
+        const mirmillon = new Mirmillon(
+            nombre = "Mirmillon",
+            fuerza = 20,
+            arma = espada,
+            armadura = casco
+        )
+
+        mirmillon.cambiarArmadura(escudo)
+
+        assert.equals(21.5, mirmillon.defensa())
+    }
+
+
+    test "Un dimachaerus aumenta su destreza en 1 cada vez que ataca" {
+        const dimachaerus = new Dimachaerus(
+            nombre = "Dima",
+            destreza = 20
+        )
+
+        dimachaerus.añadirArma(maza)
+
+        const mirmillon = new Mirmillon(
+            nombre = "Mirmillon",
+            fuerza = 20,
+            arma = daga,
+            armadura = casco
+        )
+
+        dimachaerus.atacar(mirmillon)
+
+        assert.equals(24, dimachaerus.destreza())
+    }
+}
+
+describe "Coliseo - Pelea injusta" {
+
+    const armaFuerte = new Contundente(peso = 100)
+    const armaDebil = new Contundente(peso = 10)
+    const casco = new Casco()
+
+
+    test "En una pelea injusta gana el gladiador suelto si derrota a todos los gladiadores del grupo" {
+        const gladiador = new Mirmillon(
+            nombre = "Gladiador",
+            fuerza = 100,
+            arma = armaFuerte,
+            armadura = casco
+        )
+
+        const miembroGrupo = new Mirmillon(
+            nombre = "Miembro",
+            fuerza = 10,
+            arma = armaDebil,
+            armadura = casco
+        )
+
+        const grupo = new GrupoDeGladiadores(
+            nombre = "Grupo A"
+        )
+
+        grupo.agregarGladiador(miembroGrupo)
+
+        coliseo.peleaInjusta(grupo, gladiador)
+
+        assert.equals(0, miembroGrupo.vidaActual())
+        assert.equals(100, gladiador.vidaActual())
+    }
+
+
+    test "En una pelea injusta gana el grupo si derrota al gladiador suelto" {
+        const gladiador = new Mirmillon(
+            nombre = "Gladiador",
+            fuerza = 10,
+            arma = armaDebil,
+            armadura = casco
+        )
+
+        const miembroGrupo = new Mirmillon(
+            nombre = "Miembro",
+            fuerza = 100,
+            arma = armaFuerte,
+            armadura = casco
+        )
+
+        const grupo = new GrupoDeGladiadores(
+            nombre = "Grupo A"
+        )
+
+        grupo.agregarGladiador(miembroGrupo)
+
+        coliseo.peleaInjusta(grupo, gladiador)
+
+        assert.equals(0, gladiador.vidaActual())
+        assert.equals(100, miembroGrupo.vidaActual())
+    }
+
+
+    test "Si un gladiador del grupo muere, el grupo puede elegir otro campeón" {
+        const gladiador = new Mirmillon(
+            nombre = "Gladiador",
+            fuerza = 50,
+            arma = armaFuerte,
+            armadura = casco
+        )
+
+        const miembroDebil = new Mirmillon(
+            nombre = "Debil",
+            fuerza = 1,
+            arma = armaDebil,
+            armadura = casco
+        )
+
+        const miembroFuerte = new Mirmillon(
+            nombre = "Fuerte",
+            fuerza = 80,
+            arma = armaFuerte,
+            armadura = casco
+        )
+
+
+        const grupo = new GrupoDeGladiadores(
+            nombre = "Grupo A"
+        )
+
+        grupo.agregarGladiador(miembroDebil)
+        grupo.agregarGladiador(miembroFuerte)
+
+        assert.equals(miembroFuerte, grupo.elegirCampeon())
+    }
+}
+
+describe "Coliseo - Peleas entre grupos" {
+
+    const armaFuerte = new Contundente(peso = 100)
+    const armaDebil = new Contundente(peso = 10)
+    const casco = new Casco()
+
+
+    test "El primer round enfrenta a los campeones de cada grupo" {
+        const gladiadorA = new Mirmillon(
+            nombre = "Gladiador A",
+            fuerza = 100,
+            arma = armaFuerte,
+            armadura = casco
+        )
+
+        const gladiadorB = new Mirmillon(
+            nombre = "Gladiador B",
+            fuerza = 10,
+            arma = armaDebil,
+            armadura = casco
+        )
+
+        const grupoA = new GrupoDeGladiadores(
+            nombre = "Grupo A"
+        )
+
+        const grupoB = new GrupoDeGladiadores(
+            nombre = "Grupo B"
+        )
+
+        grupoA.agregarGladiador(gladiadorA)
+        grupoB.agregarGladiador(gladiadorB)
+
+        coliseo.round1(grupoA, grupoB)
+
+        assert.equals(1, grupoA.cantPeleasParticipadas())
+        assert.equals(1, grupoB.cantPeleasParticipadas())
+    }
+
+
+    test "Ambos grupos solo tienen 1 pelea realizada" {
+        const gladiadorA = new Mirmillon(
+            nombre = "Gladiador A",
+            fuerza = 100,
+            arma = armaFuerte,
+            armadura = casco
+        )
+
+        const gladiadorB = new Mirmillon(
+            nombre = "Gladiador B",
+            fuerza = 10,
+            arma = armaDebil,
+            armadura = casco
+        )
+
+        const grupoA = new GrupoDeGladiadores(
+            nombre = "Grupo A"
+        )
+
+        const grupoB = new GrupoDeGladiadores(
+            nombre = "Grupo B"
+        )
+
+        grupoA.agregarGladiador(gladiadorA)
+        grupoB.agregarGladiador(gladiadorB)
+
+        coliseo.round1(grupoA, grupoB)
+
+        assert.equals(1, grupoA.cantPeleasParticipadas())
+        assert.equals(1, grupoB.cantPeleasParticipadas())
+    }
+}
